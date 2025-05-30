@@ -1,0 +1,27 @@
+[project]
+name = "url-detector"
+version = "0.1.0"
+description = "A project to detect and confirm URLs from text input."
+requires-python = ">=3.10" # Changed from >=3.12 to >=3.10
+dependencies = [
+    "crawl4ai>=0.1",
+    "openai>=1.0", # Added conceptual LLM library
+    "langgraph>=0.0.69", # Added LangGraph dependency
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# Include the agent_core package and main.py in the wheel.
+# "agent_core" will make hatchling look for agent_core/__init__.py and include it.
+# We also want main.py to be part of the distribution.
+# Hatch uses / as path separator.
+include = ["agent_core", "main.py"]
+
+
+# [tool.uv]
+# # Additional uv specific configurations can be added here if needed.
+# # Commenting this out for now as direct uv CLI is not working
+# # and focusing on making the package buildable with pip.
