@@ -63,7 +63,7 @@ workflow.add_conditional_edges(
     should_proceed_to_processing,
     {
         "prepare_next_url": "prepare_next_url",
-        "final_report": "final_report" 
+        "final_report": "final_report"
     }
 )
 

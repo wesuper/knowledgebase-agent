@@ -7,6 +7,8 @@ dependencies = [
     "crawl4ai>=0.1",
     "openai>=1.0", # Added conceptual LLM library
     "langgraph>=0.0.69", # Added LangGraph dependency
+    "fastapi>=0.100",      # Added FastAPI
+    "uvicorn[standard]>=0.20", # Added Uvicorn with standard extras
 ]
 
 [build-system]

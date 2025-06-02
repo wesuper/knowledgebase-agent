@@ -172,3 +172,21 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Node.js / Next.js (specifically for the frontend directory)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.DS_Store
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/lerna-debug.log*
+frontend/.pnpm-debug.log*
+
+# General output directory for the agent
+agent_execution_directory/
+
+# Graph visualization if generated locally
+agent_graph.png

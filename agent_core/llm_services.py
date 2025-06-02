@@ -134,7 +134,7 @@ if __name__ == '__main__':
     # This test relies on them not being set, or being set to 'placeholder'
     if "LLM_PROVIDER" in os.environ: del os.environ["LLM_PROVIDER"]
     if "OPENAI_API_KEY" in os.environ: del os.environ["OPENAI_API_KEY"]
-    
+
     provider = get_llm_provider()
     summary = provider.generate_summary("This is a test text for default placeholder.")
     mindmap = provider.generate_mermaid_mindmap(summary)
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     os.environ["LLM_PROVIDER"] = "openai"
     os.environ["LLM_MODEL"] = "gpt-4-test"
     if "OPENAI_API_KEY" in os.environ: del os.environ["OPENAI_API_KEY"] # Ensure it's not set
-    
+
     provider_openai_no_key = get_llm_provider()
     summary_openai_no_key = provider_openai_no_key.generate_summary("Test for OpenAI without API key.")
     mindmap_openai_no_key = provider_openai_no_key.generate_mermaid_mindmap(summary_openai_no_key)
@@ -164,7 +164,7 @@ if __name__ == '__main__':
     mindmap_openai_with_key = provider_openai_with_key.generate_mermaid_mindmap(summary_openai_with_key)
     print(f"Summary: {summary_openai_with_key}")
     print(f"Mindmap:\n{mindmap_openai_with_key}")
-    
+
     # Cleanup environment variables used for testing
     del os.environ["LLM_PROVIDER"]
     if "OPENAI_API_KEY" in os.environ: del os.environ["OPENAI_API_KEY"]

@@ -24,21 +24,21 @@ def process_content_for_summary_and_mindmap(markdown_file_path: str) -> tuple[st
     try:
         # Read the content of the Markdown file
         markdown_content = Path(markdown_file_path).read_text(encoding="utf-8")
-        
+
         if not markdown_content.strip():
             print(f"Warning: Markdown file {markdown_file_path} is empty or contains only whitespace.")
             # LLM provider should handle empty string gracefully if it proceeds.
             # Alternatively, return None or predefined strings for empty content here.
-            # summary = "" 
+            # summary = ""
             # mermaid_mindmap = "```mermaid\ngraph TD\nA[\"Empty Content\"];\n```"
             # return summary, mermaid_mindmap
 
         # Use LLM provider to generate summary
         summary = llm_provider.generate_summary(markdown_content)
-        
+
         # Use LLM provider to generate Mermaid mind map
         mermaid_mindmap = llm_provider.generate_mermaid_mindmap(summary)
-        
+
         return summary, mermaid_mindmap
 
     except FileNotFoundError:
@@ -62,14 +62,14 @@ def prepend_mindmap_to_markdown(markdown_file_path: str, mermaid_mindmap: str) -
     try:
         # Read the original content
         original_content = Path(markdown_file_path).read_text(encoding="utf-8")
-        
+
         # Construct the new content
         # The mindmap should already be wrapped in ```mermaid ... ```
         new_content = f"{mermaid_mindmap}\n\n---\n\n{original_content}"
-        
+
         # Write the new content back, overwriting the original file
         Path(markdown_file_path).write_text(new_content, encoding="utf-8")
-        
+
         print(f"Mind map successfully prepended to {markdown_file_path}")
         return True
 
@@ -85,11 +85,11 @@ if __name__ == '__main__':
     # This will now use the llm_services configuration.
     # To test different providers, set environment variables like LLM_PROVIDER.
     # e.g., export LLM_PROVIDER=openai
-    
+
     # Create a dummy markdown file
     dummy_md_path = Path("dummy_test_article.md")
     dummy_md_content = """# My Test Article for LLM Abstraction
-    
+
 This is the first paragraph of the article. It demonstrates the new LLM abstraction layer.
 This is the second paragraph. It should be summarized by the configured LLM provider.
 The agent will process this, generate a summary and mindmap via the abstraction, and then prepend it.

@@ -10,14 +10,14 @@ class AgentState(TypedDict):
     detected_urls: Optional[List[str]]
     confirmed_urls: Optional[List[str]]
     user_confirmation: Optional[bool]
-    
+
     # For iterating through URLs
     urls_to_process_stack: Optional[List[str]] # Will hold a copy of confirmed_urls to pop from
     current_url_to_process: Optional[str]
-    
+
     # Accumulates paths of generated markdown files
-    processed_markdown_paths: List[str] 
-    
+    processed_markdown_paths: List[str]
+
     # For final reporting or error messages
     final_message: Optional[str]
     error_message: Optional[str]

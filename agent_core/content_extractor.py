@@ -24,7 +24,7 @@ def sanitize_filename(name: str) -> str:
     return name
 
 def extract_and_store_content(
-    crawl_result: Dict[str, Any], 
+    crawl_result: Dict[str, Any],
     original_url: str, # Keep original_url for context if title is missing or for logging
     base_output_dir: str = "agent_execution_directory/crew-paper"
 ) -> str | None:
@@ -54,13 +54,13 @@ def extract_and_store_content(
 
         # --- Output Directory Setup ---
         current_date_str = datetime.now().strftime("%Y-%m-%d")
-        
+
         page_title = crawl_result.get('title')
         if not page_title: # Handle empty title from crawl_result
             print(f"Warning: No title found for {original_url}. Using a placeholder based on URL.")
             # Create a fallback title from the URL if necessary
             page_title = sanitize_filename(original_url.split('/')[-1] or original_url.split('/')[-2] or "Untitled_Page_From_URL")
-        
+
         sanitized_title = sanitize_filename(page_title)
 
         output_path = Path(base_output_dir) / current_date_str / sanitized_title
@@ -92,7 +92,7 @@ def extract_and_store_content(
                 media_content_lines.append(f"[Video {i+1}: {vid_url}]({vid_url})")
         else:
             media_content_lines.append("\nNo videos found or extracted.")
-        
+
         # Append media information to the markdown content
         if len(media_content_lines) > 1: # if we added more than just the header
             full_markdown_content = markdown_content + "\n" + "\n".join(media_content_lines)
@@ -102,7 +102,7 @@ def extract_and_store_content(
         # Save the Markdown file
         with open(markdown_filepath, "w", encoding="utf-8") as f:
             f.write(full_markdown_content)
-        
+
         print(f"ContentExtractor: Markdown content for {original_url} saved to: {markdown_filepath}")
         return str(markdown_filepath)
 
@@ -115,9 +115,9 @@ def extract_and_store_content(
 if __name__ == '__main__':
     # Example Usage (for testing this module directly)
     # This now requires a mock crawl_result or a call to the Crawl4aiTool first.
-    
+
     print(f"Sanitized 'My Test /\\?*<>:|\" Document 123.pdf': {sanitize_filename('My Test /\\?*<>:|\" Document 123.pdf')}")
-    
+
     # Mock crawl_result for testing extract_and_store_content
     mock_crawl_data = {
         "title": "Test Page Title with Slashes / and Spaces",

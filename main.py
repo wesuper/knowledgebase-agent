@@ -32,7 +32,7 @@ def main():
     elif llm_config.get('provider') == 'placeholder':
         print("  Using general placeholder LLM responses via PlaceholderLLM.")
     print("-" * 50)
-    
+
     # Get initial text input from the user
     user_text_input = input("Enter text with URLs to process: ")
 
@@ -56,7 +56,7 @@ def main():
     print("\n--- Invoking Agent Graph ---")
     # Configuration for the graph run, e.g., recursion limit
     # config = {"recursion_limit": 15} # Adjust as needed for the number of URLs + processing steps
-    
+
     # Invoke the graph with the initial state
     # Note: If your graph has many steps or URLs, you might need to increase recursion_limit
     # For now, LangGraph's default should be okay for a few URLs.
@@ -86,12 +86,12 @@ def main():
     print("\n--- Summary of Operation ---")
     if final_state.get("final_message"):
         print(f"Message: {final_state.get('final_message')}")
-    
+
     if final_state.get("processed_markdown_paths"):
         print("Processed Markdown files:")
         for path in final_state.get("processed_markdown_paths", []):
             print(f"  - {path}")
-            
+
     if final_state.get("error_message"):
         print(f"Errors encountered: {final_state.get('error_message')}")
 

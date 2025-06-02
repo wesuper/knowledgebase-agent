@@ -33,7 +33,7 @@ class Crawl4aiTool(Tool):
             print(f"Crawl4aiTool: Error initializing Crawl4ai: {e}")
             # In a real scenario, this might raise an error or set a state
             # indicating the tool is not operational.
-            self.crawler = None 
+            self.crawler = None
 
     def execute(self, url: str) -> Dict[str, Any] | None:
         """
@@ -49,7 +49,7 @@ class Crawl4aiTool(Tool):
         if not self.crawler:
             print("Crawl4aiTool: Crawler not initialized. Cannot execute.")
             return None
-            
+
         if not url or not isinstance(url, str):
             print("Crawl4aiTool: Invalid URL provided for execution.")
             return None
@@ -62,7 +62,7 @@ class Crawl4aiTool(Tool):
             # For now, we return the result object directly.
             # If needed, convert to a plain dict: vars(result) or a custom method.
             result = self.crawler.run(url=url)
-            
+
             if result:
                 print(f"Crawl4aiTool: Successfully crawled {url}. Title: '{getattr(result, 'title', 'N/A')}'")
                 # Example of converting to a dict if result has attributes like title, markdown etc.
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     print("\n--- Testing Crawl4aiTool ---")
     # Test with a known simple URL. labs.google.com can be complex.
     # Using a placeholder URL as direct external calls can be problematic in some envs.
-    # test_url = "https://www.example.com" 
+    # test_url = "https://www.example.com"
     test_url_google = "https://www.google.com" # A generally accessible site
 
     # Note: This test requires crawl4ai to be installed and working,
@@ -118,6 +118,6 @@ if __name__ == '__main__':
             print("Crawl execution returned None or failed.")
     else:
         print("Crawl4aiTool could not be initialized. Skipping direct test.")
-    
+
     print("\n--- End of Crawl4aiTool Test ---")
     pass

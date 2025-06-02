@@ -37,7 +37,7 @@ def request_user_confirmation_node(state: AgentState) -> AgentState:
         print("User confirmed to proceed with detected URLs.")
         state["user_confirmation"] = True
         state["confirmed_urls"] = detected_urls_list
-        state["urls_to_process_stack"] = list(detected_urls_list) 
+        state["urls_to_process_stack"] = list(detected_urls_list)
     else:
         print("User declined to proceed.")
         state["user_confirmation"] = False
@@ -70,15 +70,15 @@ def process_url_node(state: AgentState) -> AgentState:
     current_url = state.get("current_url_to_process")
     if not current_url:
         print("Error: process_url_node called without a URL to process.")
-        state["error_message"] = (state.get("error_message", "") + 
+        state["error_message"] = (state.get("error_message", "") +
                                  "Attempted to process with no current URL. ").strip()
         return state
 
     print(f"Processing URL: {current_url} using Crawl4aiTool.")
-    
+
     # Initialize and use the Crawl4aiTool
     crawl4ai_tool = Crawl4aiTool() # Instantiated here, or could be passed in state if initialized once globally
-    
+
     if not crawl4ai_tool.crawler: # Check if crawler initialized correctly in the tool
         print(f"Error: Crawl4aiTool's crawler is not initialized. Cannot process {current_url}.")
         state["error_message"] = (state.get("error_message", "") +
@@ -92,14 +92,14 @@ def process_url_node(state: AgentState) -> AgentState:
         # 1. Extract and Store Content (now takes crawl_result)
         # The base_output_dir is default in extract_and_store_content
         markdown_filepath = extract_and_store_content(
-            crawl_result=crawl_result, 
+            crawl_result=crawl_result,
             original_url=current_url # Pass original URL for context
         )
-        
+
         if not markdown_filepath:
             print(f"Failed to extract/store content for {current_url} (possibly due to crawl error or no markdown).")
             error_detail = crawl_result.get("error", "Content extraction/storage failed.") if crawl_result else "Crawl result was None."
-            state["error_message"] = (state.get("error_message", "") + 
+            state["error_message"] = (state.get("error_message", "") +
                                      f"Content processing failed for {current_url}: {error_detail}. ").strip()
             return state # Skip further processing for this URL
 
@@ -107,20 +107,20 @@ def process_url_node(state: AgentState) -> AgentState:
         current_processed_paths = state.get("processed_markdown_paths", [])
         current_processed_paths.append(markdown_filepath)
         state["processed_markdown_paths"] = current_processed_paths
-        
+
         # 2. Generate Summary and Mindmap
         print(f"Generating summary and mindmap for: {markdown_filepath}")
         summary_result = process_content_for_summary_and_mindmap(markdown_filepath)
-        
+
         if not summary_result:
             print(f"Failed to generate summary/mindmap for {markdown_filepath}.")
             state["error_message"] = (state.get("error_message", "") +
                                      f"Summary/mindmap generation failed for {markdown_filepath}. ").strip()
             return state # Skip prepending for this URL (already added to processed_markdown_paths)
-            
+
         _summary, mermaid_mindmap = summary_result
         print(f"Summary and mindmap generated for {markdown_filepath}.")
-        
+
         # 3. Prepend Mindmap
         if prepend_mindmap_to_markdown(markdown_filepath, mermaid_mindmap):
             print(f"Mindmap successfully prepended to {markdown_filepath}.")
@@ -133,7 +133,7 @@ def process_url_node(state: AgentState) -> AgentState:
         print(f"An unexpected error occurred in process_url_node for {current_url}: {e}")
         import traceback
         traceback.print_exc()
-        state["error_message"] = (state.get("error_message", "") + 
+        state["error_message"] = (state.get("error_message", "") +
                                  f"Unexpected error processing {current_url}: {str(e)}. ").strip()
     return state
 
@@ -151,7 +151,7 @@ def final_report_node(state: AgentState) -> AgentState:
             state["final_message"] = f"Processing completed successfully for {len(processed_paths)} URL(s)."
         else: # No specific error, no paths, means something else (e.g. no URLs detected initially but not caught as final message)
             state["final_message"] = "Processing finished, but no content was generated or no URLs were confirmed."
-    
+
     # Log the full error message if it exists, as final_message might be a summary
     if errors:
         print(f"Detailed errors during processing: {errors}")

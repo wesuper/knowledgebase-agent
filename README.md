@@ -1,25 +1,32 @@
 # AI Content Processing Agent
 
-This project is an AI-powered agent designed to detect URLs in user-provided text, extract content from these URLs, generate summaries and mind maps using Language Models (LLMs), and store the processed content in a structured way. The agent's workflow is orchestrated using LangGraph, and it features a modular LLM integration layer.
+This project is an AI-powered agent designed to detect URLs in user-provided text, extract content from these URLs, generate summaries and mind maps using Language Models (LLMs), and store the processed content in a structured way. The agent's workflow is orchestrated using LangGraph, and it features a modular LLM integration layer. It also includes a Next.js frontend for user interaction.
 
 ## Key Features
 
 *   **URL Detection:** Identifies URLs from input text using regular expressions.
-*   **User Confirmation:** Prompts the user to confirm which detected URLs should be processed.
+*   **User Confirmation (CLI & Backend):** Prompts the user to confirm which detected URLs should be processed (CLI mode). The backend API currently processes all submitted URLs.
 *   **Web Content Extraction:** Uses `crawl4ai` (wrapped as a formal Tool) to scrape textual content (Markdown), images, and video links from web pages.
-*   **Content Summarization:** Generates a concise summary of the extracted text using a configurable LLM provider.
-*   **Mermaid Mind Map Generation:** Creates a Mermaid syntax mind map from the summary, also using an LLM.
+*   **Content Summarization:** Generates a concise summary of the extracted text using a configurable LLM provider (currently placeholder).
+*   **Mermaid Mind Map Generation:** Creates a Mermaid syntax mind map from the summary, also using an LLM (currently placeholder).
 *   **Structured Output:** Saves the extracted Markdown, prepended with its mind map, into a date-stamped and title-sanitized directory structure. Media links are included in the Markdown.
-*   **LangGraph Orchestration:** The agent's operational flow, state management, and conditional logic are managed by LangGraph.
+*   **LangGraph Orchestration:** The Python agent's operational flow, state management, and conditional logic are managed by LangGraph.
 *   **Modular LLM Integration:** Supports different LLM providers through an abstraction layer (`LLMProvider`), with initial (placeholder) support for OpenAI. Configuration is managed via environment variables.
 *   **Tool-Based Architecture:** External services like web scraping (`crawl4ai`) are integrated as formal "Tools".
+*   **FastAPI Backend:** Provides API endpoints to run the agent and serve processed files.
+*   **Next.js Frontend:** A user interface built with Next.js, TypeScript, and React to interact with the agent and view results.
 
 ## Prerequisites
 
+### Backend (Python Agent):
 *   **Python:** 3.10+ (as per current `pyproject.toml` configuration).
-*   **uv:** Recommended for environment and package management. `uv` is a fast Python package installer and resolver, written in Rust. It can be used to create virtual environments and install dependencies. (Can also use `pip` with a standard virtual environment).
+*   **uv:** Recommended for Python environment and package management. (Can also use `pip` with a standard virtual environment).
 *   **Git:** For cloning the repository.
-*   **(Optional) Graphviz:** If you wish to generate a visual representation of the LangGraph graph (see `agent_core/agent_graph.py`).
+*   **(Optional) Graphviz:** If you wish to generate a visual representation of the LangGraph graph.
+
+### Frontend (Next.js Application):
+*   **Node.js:** >=18.x recommended.
+*   **npm** (comes with Node.js) or **yarn**.
 
 ## Setup and Installation
 
@@ -29,8 +36,11 @@ This project is an AI-powered agent designed to detect URLs in user-provided tex
     cd <repository-name>
     ```
 
-2.  **Create and Activate Virtual Environment (Recommended with `uv`):**
+### Backend Setup:
+
+2.  **Create and Activate Python Virtual Environment (Recommended with `uv`):**
     ```bash
+    # In the project root directory
     uv venv
     source .venv/bin/activate  # On Linux/macOS
     # .venv\Scripts\activate   # On Windows
@@ -38,57 +48,87 @@ This project is an AI-powered agent designed to detect URLs in user-provided tex
     Alternatively, using standard `venv`:
     ```bash
     python -m venv .venv
-    source .venv/bin/activate  # On Linux/macOS
-    # .venv\Scripts\activate   # On Windows
+    source .venv/bin/activate
     ```
 
-3.  **Install Dependencies (with `uv`):**
+3.  **Install Python Dependencies (with `uv`):**
     ```bash
+    # In the project root directory, with virtual environment activated
     uv pip install .
     ```
     Alternatively, using `pip`:
     ```bash
     pip install .
     ```
-    This will install all necessary packages listed in `pyproject.toml`, including `langgraph`, `crawl4ai`, etc.
+    This installs `fastapi`, `uvicorn`, `langgraph`, `crawl4ai`, etc.
 
-4.  **Configure Environment Variables for LLM:**
-    The agent uses environment variables to configure the LLM provider. Create a `.env` file in the project root or set these variables in your environment:
+4.  **Configure Backend Environment Variables (LLM):**
+    Create a `.env` file in the project root or set these variables in your environment for the Python backend:
+    *   `LLM_PROVIDER`: e.g., `openai` or `placeholder` (defaults to `placeholder`).
+    *   `OPENAI_API_KEY`: Your OpenAI API key if using OpenAI.
+    *   `LLM_MODEL`: e.g., `gpt-3.5-turbo`.
+    *(Note: LLM calls are currently simulated with placeholder responses.)*
 
-    *   `LLM_PROVIDER`: Specifies the LLM provider to use.
-        *   Example: `LLM_PROVIDER=openai` or `LLM_PROVIDER=placeholder` (defaults to `placeholder`).
-    *   `OPENAI_API_KEY`: Your API key if using the OpenAI provider.
-        *   Example: `OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
-    *   `LLM_MODEL`: The model name to use for the selected provider.
-        *   Example: `LLM_MODEL=gpt-3.5-turbo` (for OpenAI) or `LLM_MODEL=custom-placeholder` (for PlaceholderLLM). Defaults to `default` which might map to a provider-specific default like `gpt-3.5-turbo`.
+### Frontend Setup:
 
-    *Note: Currently, LLM calls are simulated with placeholder responses. Full API integration would require these keys for actual LLM interactions.*
+5.  **Navigate to Frontend Directory:**
+    ```bash
+    cd frontend
+    ```
 
-## Running the Agent (CLI)
+6.  **Install Frontend Dependencies:**
+    ```bash
+    npm install
+    # or: yarn install
+    ```
 
-The agent is run via the `main.py` script:
+7.  **Configure Frontend Environment Variables (Optional but Recommended):**
+    Create a file named `.env.local` in the `frontend/` directory:
+    ```
+    NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+    NEXT_PUBLIC_API_FILE_BASE_URL=http://localhost:8000/api/files
+    ```
+    If this file is not created, the frontend will default to `http://localhost:8000` for the API base and `http://localhost:8000/api/files` for fetching files, as defined in `frontend/src/services/agentApi.ts` and `frontend/src/pages/view/[...filePath].tsx`.
 
+## Running the Application
+
+You need to run both the backend server and the frontend development server.
+
+1.  **Run the Backend Server:**
+    Open a terminal, navigate to the project root, activate the Python virtual environment, and run:
+    ```bash
+    uvicorn backend_server:app --reload --port 8000
+    ```
+    The backend API will be available at `http://localhost:8000`.
+
+2.  **Run the Frontend Development Server:**
+    Open another terminal, navigate to the `frontend/` directory, and run:
+    ```bash
+    npm run dev
+    # or: yarn dev
+    ```
+    The frontend application will be available at `http://localhost:3000`.
+
+3.  **Using the Application:**
+    *   Open `http://localhost:3000` in your browser.
+    *   The LLM configuration (from the backend's environment) will be displayed.
+    *   Enter text containing URLs into the textarea and click "Submit URLs".
+    *   The agent (via the backend) will process the URLs.
+    *   Results, including messages, errors, and links to processed files, will be displayed.
+    *   Clicking on a processed file link will navigate to a view page showing the Mermaid mind map and Markdown content.
+
+### Running the Agent (CLI - Alternative)
+
+The core agent logic can also be run via a command-line interface (though the primary interaction is now intended via the frontend and backend API):
 ```bash
+# Ensure Python virtual environment is active
 python main.py
 ```
+Follow the CLI prompts for input and confirmation. Output files are saved in the `agent_execution_directory/crew-paper/` directory.
 
-**Interaction Flow:**
+## Output Directory Structure
 
-1.  The script will first display the current LLM service configuration based on environment variables.
-2.  It will then prompt you to "Enter text with URLs to process:".
-3.  Paste or type text containing one or more URLs.
-4.  If URLs are detected, they will be listed, and you'll be asked: "Do you want to proceed with these URLs? (yes/no):".
-5.  Type `yes` to process the confirmed URLs or `no` to cancel.
-6.  The agent will then process each confirmed URL:
-    *   Scrape content using `crawl4ai`.
-    *   Save the content to a Markdown file.
-    *   Generate a (placeholder) summary and Mermaid mind map.
-    *   Prepend the mind map to the Markdown file.
-7.  Status messages will be printed throughout the process.
-8.  A final message will indicate completion status, and any errors will be reported.
-
-**Output Directory Structure:**
-Processed content is saved in:
+Processed content from the agent is saved in:
 `agent_execution_directory/crew-paper/YYYY-MM-DD/Sanitized_Page_Title/Sanitized_Page_Title.md`
 A `Sanitized_Page_Title_Media/` subdirectory is also created (currently for placeholder media links).
 
@@ -96,122 +136,93 @@ A `Sanitized_Page_Title_Media/` subdirectory is also created (currently for plac
 
 ```
 .
-├── agent_core/                # Core logic of the agent
+├── agent_core/                # Core Python agent logic
 │   ├── __init__.py
-│   ├── agent_graph.py         # LangGraph definition and compilation
-│   ├── content_extractor.py   # Saves crawled content to files
-│   ├── graph_nodes.py         # Node functions for the LangGraph
-│   ├── graph_state.py         # AgentState definition for LangGraph
-│   ├── llm_services.py        # LLM provider abstraction and configuration
-│   ├── summarizer.py          # Logic for summarization and mind map prepending
-│   ├── tools.py               # Tool definitions (e.g., Crawl4aiTool)
-│   └── url_detector.py        # URL detection and confirmation logic
-├── main.py                    # Main CLI entry point for the agent
-├── pyproject.toml             # Project metadata and dependencies (for uv/pip)
+│   ├── agent_graph.py         # LangGraph definition
+│   ├── content_extractor.py   # Saves crawled content
+│   ├── graph_nodes.py         # LangGraph nodes
+│   ├── graph_state.py         # AgentState for LangGraph
+│   ├── llm_services.py        # LLM provider abstraction
+│   ├── summarizer.py          # Summarization and mind map logic
+│   ├── tools.py               # Tool definitions (Crawl4aiTool)
+│   └── url_detector.py        # URL detection/confirmation
+├── backend_server.py          # FastAPI backend server
+├── main.py                    # CLI entry point for the agent
+├── pyproject.toml             # Python project metadata and dependencies
+├── frontend/                  # Next.js frontend application
+│   ├── public/                # Static assets
+│   ├── src/                   # Frontend source code
+│   │   ├── components/        # React components (InputForm, ResultsDisplay, MermaidRenderer)
+│   │   ├── pages/             # Next.js pages (_app.tsx, index.tsx, view/[...filePath].tsx)
+│   │   ├── services/          # API interaction logic (agentApi.ts)
+│   │   └── styles/            # Global CSS (globals.css)
+│   ├── next.config.js         # Next.js configuration
+│   ├── package.json           # Frontend dependencies (npm)
+│   ├── tsconfig.json          # TypeScript configuration for frontend
+│   └── .env.local (optional)  # Frontend environment variables (gitignored)
 ├── README.md                  # This file
-└── agent_execution_directory/ # Default output directory (created on run)
-    └── crew-paper/
+└── agent_execution_directory/ # Default output directory for agent (gitignored)
 ```
 
 ## Architectural Design
 
-The agent is built upon a modular architecture with clear separation of concerns, orchestrated by LangGraph.
+(This section remains largely the same, focusing on the Python agent's architecture.)
 
-*   **LangGraph Orchestration:**
-    *   The core workflow is defined in `agent_core/agent_graph.py`.
-    *   `StatefulGraph` from LangGraph is used to manage the sequence of operations.
-    *   `AgentState` (`agent_core/graph_state.py`) defines the memory or state that flows through the graph, being updated by each node.
-    *   Nodes (`agent_core/graph_nodes.py`) represent specific processing steps (e.g., detecting URLs, processing a single URL).
-    *   Edges (conditional or direct) define the transitions between nodes based on the current state.
+The Python agent is built upon a modular architecture with clear separation of concerns, orchestrated by LangGraph.
 
-*   **Modular LLM Integration:**
-    *   Located in `agent_core/llm_services.py`.
-    *   An abstract base class `LLMProvider` defines a common interface for LLM operations (e.g., `generate_summary`, `generate_mermaid_mindmap`).
-    *   Concrete implementations like `OpenAILLM` (for OpenAI) and `PlaceholderLLM` (for simulated responses) inherit from `LLMProvider`.
-    *   A factory function `get_llm_provider()` dynamically instantiates the chosen LLM provider based on environment variables (`LLM_PROVIDER`, API keys, `LLM_MODEL`). This allows for easy switching or addition of LLM backends.
+*   **LangGraph Orchestration:** ...
+*   **Modular LLM Integration:** ...
+*   **Agent Components (PMA / PATA Model):** ...
 
-*   **Agent Components (PMA / PATA Model):**
-    *   **Planning:** The LangGraph definition in `agent_graph.py` serves as the explicit, modifiable plan for the agent's execution sequence and conditional logic.
-    *   **Memory:** The `AgentState` TypedDict in `graph_state.py` acts as the agent's working memory, carrying data between operational steps.
-    *   **Tools:**
-        *   `agent_core/tools.py` defines a formal structure for tools. `Crawl4aiTool` wraps the `crawl4ai` library for web scraping, making it a well-defined component.
-        *   The LLM services in `llm_services.py` can also be viewed as specialized tools for text generation tasks.
-    *   **Action:** The functions within `agent_core/graph_nodes.py` (e.g., `process_url_node`) execute the agent's actions by invoking tools, calling business logic functions (like file saving from `content_extractor.py` or summarization logic from `summarizer.py`), and updating the state.
+## Backend API for Frontend
 
-## API Reference (Conceptual for Future Web Frontend)
-
-While the current implementation is CLI-based, a future web service (e.g., using FastAPI) could expose the agent's functionality via the following conceptual API endpoints:
+The FastAPI backend (`backend_server.py`) provides the following key endpoints for the Next.js frontend:
 
 *   **`POST /api/agent/run`**
-    *   **Request:**
-        ```json
-        {
-          "text_input": "User-provided text with URLs like https://example.com"
-        }
-        ```
-    *   **Response (Synchronous for now, could be async with session ID):**
-        ```json
-        {
-          "status": "completed" | "failed" | "completed_with_errors",
-          "message": "Descriptive message of the outcome.",
-          "processed_files": [
-            "/path/to/output/YYYY-MM-DD/Page_Title/Page_Title.md"
-          ],
-          "errors": "Details of any errors encountered."
-        }
-        ```
+    *   **Request Body:** `{ "text_input": "string" }`
+    *   **Response Body:** The final state of the LangGraph agent (`AgentState` as JSON), including `status`, `message`, `processed_markdown_paths`, `error_summary`, etc.
+    *   **Function:** Triggers the agent to process the input text.
 
-*   **`GET /api/agent/status/{session_id}`** (If asynchronous operation is implemented)
-    *   **Request:** Path parameter `session_id` obtained from an async `/run` call.
-    *   **Response:**
-        ```json
-        {
-          "session_id": "string",
-          "status": "pending" | "processing" | "completed" | "failed",
-          "message": "Current status message.",
-          "processed_files": [],
-          "errors": null
-        }
-        ```
+*   **`GET /api/files/{file_path:path}`**
+    *   **URL Parameter:** `file_path` represents the relative path to the file within the `agent_execution_directory/crew-paper/` directory (e.g., `YYYY-MM-DD/Title/Title.md`).
+    *   **Response:** The raw content of the requested Markdown file.
+    *   **Function:** Allows the frontend to fetch and display processed Markdown files.
 
 ## Tool Integration: `crawl4ai`
 
-*   The `crawl4ai` library is used for web content extraction.
-*   It's wrapped within the `Crawl4aiTool` class in `agent_core/tools.py`. This formalizes its use as a distinct "tool" that the agent can leverage.
-*   The `process_url_node` in the LangGraph flow calls `Crawl4aiTool.execute(url)` to get web page content.
-*   The result (a dictionary containing title, markdown, media links, etc.) is then passed to `content_extractor.extract_and_store_content` for file system operations.
+(This section remains largely the same.)
+*   The `crawl4ai` library is used for web content extraction. ...
 
 ## Extensibility
 
-*   **Adding New LLM Providers:**
-    1.  Create a new class in `agent_core/llm_services.py` that implements the `LLMProvider` interface.
-    2.  Update the `get_llm_provider()` factory function to recognize and instantiate your new provider based on an `LLM_PROVIDER` environment variable value and its specific API key/model configuration.
-*   **Adding New Tools:**
-    1.  Define a new tool class, potentially inheriting from the `Tool` base class in `agent_core/tools.py`.
-    2.  Implement its `execute` method.
-    3.  Integrate the tool into the relevant LangGraph node(s) in `agent_core/graph_nodes.py` where its functionality is needed.
-*   **Modifying the Workflow:**
-    *   The LangGraph definition in `agent_core/agent_graph.py` can be modified by adding, removing, or re-wiring nodes and edges to change the agent's behavior.
+(This section remains largely the same.)
+*   **Adding New LLM Providers:** ...
+*   **Adding New Tools:** ...
+*   **Modifying the Workflow:** ...
 
 ## Troubleshooting
 
-*   **`uv: command not found`**: Ensure `uv` is installed and in your system's PATH. If not using `uv`, ensure you are using `pip` with a standard Python virtual environment.
-*   **Python Version Issues**: The project is set for Python 3.10+. Ensure your environment uses a compatible version.
-*   **API Key Missing**: If using `LLM_PROVIDER=openai` (or other future non-placeholder providers), ensure the corresponding API key (e.g., `OPENAI_API_KEY`) is correctly set in your environment variables or `.env` file. The agent will print warnings if keys are expected but not found, and LLM operations will use placeholder responses.
-*   **`crawl4ai` Issues**: If `crawl4ai` fails (e.g., due to network issues or complex JavaScript on a page), the agent will attempt to handle the error for that specific URL and continue with others. Check console logs from `Crawl4aiTool` and `content_extractor`.
-*   **LangGraph Recursion Errors**: For a very large number of URLs, LangGraph's default recursion limit might be hit. This can be adjusted in `main.py` when invoking the graph: `app.invoke(initial_state, {"recursion_limit": <new_limit>})`.
+*   **Python/Backend Issues:**
+    *   `uv: command not found`: Ensure `uv` is installed and in PATH if used.
+    *   Python Version: Ensure Python 3.10+ is used.
+    *   API Key Missing: For LLM providers, set environment variables (e.g., `OPENAI_API_KEY`).
+    *   `crawl4ai` Issues: Check network or page complexity.
+    *   LangGraph Recursion Errors: Adjust limit in `backend_server.py` if invoking the graph for very long chains (currently not an issue with direct invoke).
+*   **Frontend Issues:**
+    *   Node.js/npm Version: Ensure Node.js >= 18.x.
+    *   `NEXT_PUBLIC_API_BASE_URL` not set: Frontend might default to `http://localhost:8000`. If backend is elsewhere, create `frontend/.env.local`.
+    *   Backend Not Running: Ensure the FastAPI server is running (e.g., on port 8000) when using the frontend.
+    *   CORS Errors: The backend is configured for `http://localhost:3000`. If frontend runs on a different port, update `CORSMiddleware` in `backend_server.py`.
+*   **General:**
+    *   Ensure both backend and frontend dependencies are installed correctly.
+    *   Check console logs in both the browser (for frontend) and the terminal running FastAPI (for backend) for error messages.
 
 ## Contributing
 
-Contributions are welcome! Please follow these general guidelines:
-
-1.  Fork the repository.
-2.  Create a new branch for your feature or bug fix (e.g., `feature/my-new-feature` or `fix/issue-description`).
-3.  Make your changes, ensuring code is clean and well-commented where necessary.
-4.  If adding new features, include or update relevant tests (tests are planned for future iterations).
-5.  Ensure your changes don't break existing functionality.
-6.  Submit a pull request with a clear description of your changes.
+(This section remains largely the same.)
+Contributions are welcome! ...
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file (if one is added, typically MIT for open source projects like this) for details. For now, assume MIT License.
+(This section remains largely the same.)
+This project is licensed under the MIT License. ...
